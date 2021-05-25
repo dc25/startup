@@ -1,0 +1,26 @@
+SCRIPT="${BASH_SOURCE[0]}"
+REPO=${SCRIPT%/*}
+PARENT=${REPO%/*}
+export REPOS=${PARENT%/*}
+
+export OS_A=`uname -a`
+export OS=${OS_A%%-*}
+
+if [ "$STARTING_PATH" = "" ]; then
+export STARTING_PATH=$PATH
+fi
+
+if [ "$STARTING_LD_LIBRARY_PATH" = "" ]; then
+export STARTING_LD_LIBRARY_PATH=$LD_LIBRARY_PATH
+fi
+
+export PATH=\
+$STARTING_PATH
+
+export LD_LIBRARY_PATH=\
+$STARTING_LD_LIBRARY_PATH
+
+CUSTOM=$REPOS/git/custom_startup/startup
+if [ -f $CUSTOM ]; then
+  . $CUSTOM
+fi
