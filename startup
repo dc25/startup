@@ -20,6 +20,8 @@ $STARTING_PATH
 export LD_LIBRARY_PATH=\
 $STARTING_LD_LIBRARY_PATH
 
+. $REPO/aliases
+
 CUSTOM=$REPOS/git/custom_startup/startup
 if [ -f $CUSTOM ]; then
   . $CUSTOM
