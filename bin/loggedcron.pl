@@ -36,6 +36,11 @@ END
 close $filehandle or die "unable to close file";
 
 #save to git
+#
+# Use different pub key for dedicated github repository.  
+# Thanks to : https://www.howtogeek.com/devops/how-to-use-a-different-private-ssh-key-for-git-shell-commands/
+#
+$ENV{GIT_SSH_COMMAND}='ssh -i ~/.ssh/cron_logs -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no';
 system("git add .");
 system("git commit -m \"running @ARGV\" .");
 system("git push");
