@@ -40,7 +40,13 @@ close $filehandle or die "unable to close file";
 # Use different pub key for dedicated github repository.  
 # Thanks to : https://www.howtogeek.com/devops/how-to-use-a-different-private-ssh-key-for-git-shell-commands/
 #
-$ENV{GIT_SSH_COMMAND}='ssh -i ~/.ssh/cron_logs -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no';
-system("git add .");
-system("git commit -m \"running @ARGV\" .");
-system("git push");
+# Only attempt to do git commands if ssh key exists.
+#
+my $cron_logs_key="$ENV{HOME}/.ssh/cron_logs";
+print "$cron_logs_key";
+if (-f $cron_logs_key) {
+    $ENV{GIT_SSH_COMMAND}="ssh -i $cron_logs_key -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no";
+    system("git add .");
+    system("git commit -m \"running @ARGV\" .");
+    system("git push");
+}
