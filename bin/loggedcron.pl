@@ -10,15 +10,32 @@ if ("$command_results" eq "") {
     exit;
 }
 
-#derive filename and path from command and date
+#derive previous results filename from command
 my ($short_command, $unused_command_path) = fileparse($ARGV[0]);
+my $toplevel = "$ENV{HOME}/cron_logs/$short_command";
+my $previous_results_file = "$toplevel/previous_results";
+#If previous results exist and are identical to current results then exit w/o writing anything.
+if (-f $previous_results_file) {
+    my $previous_results = `cat $previous_results_file`;
+    chomp($previous_results);
+    if ($previous_results eq $command_results) {
+        exit;
+    }
+}
+
+# Save current command results as new previous results.
+system("mkdir -p $toplevel");
+open my $prev_results_filehandle, '>', "$previous_results_file" or die "Unable to open previous results file for writing.";
+print $prev_results_filehandle <<END;
+$command_results
+END
+close $prev_results_filehandle or die "Unable to close previous results file.";
+
+#create and enter new directory
 my $filename=`date +%Y-%m-%d__%H-%M-%S`;
 chomp($filename);
 my ($year)= ("$1") if($filename=~ /(\d*)-/);
-my $path = "$ENV{HOME}/cron_logs/$short_command/$year";
-
-
-#create and enter new directory
+my $path = "$toplevel/$year";
 system("mkdir -p $path");
 chdir "$path";
 
