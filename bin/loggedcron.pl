@@ -2,6 +2,19 @@
 use strict;
 use warnings;
 use File::Basename qw(fileparse);
+use Getopt::Long;
+
+
+# thanks to: https://stackoverflow.com/a/8289657/509928
+my $script_command = $0;
+foreach (@ARGV) {
+$script_command .= /\s/ ?   " \'" . $_ . "\'"
+                :           " "   . $_;
+}
+
+my $skip_repeats = '';
+GetOptions ("skip-repeats"  => \$skip_repeats)   # flag
+or die("Error in command line arguments\n");
 
 # run command, capture results.
 my $command_results=`@ARGV`;
@@ -12,11 +25,13 @@ my ($short_command, $unused_command_path) = fileparse($ARGV[0]);
 my $toplevel = "$ENV{HOME}/cron_logs/$short_command";
 my $previous_results_file = "$toplevel/previous_results";
 #If previous results exist and are identical to current results then exit w/o writing anything.
-if (-f $previous_results_file) {
-    my $previous_results = `cat $previous_results_file`;
-    chomp($previous_results);
-    if ($previous_results eq $command_results) {
-        exit;
+if ($skip_repeats) {
+    if (-f $previous_results_file) {
+        my $previous_results = `cat $previous_results_file`;
+        chomp($previous_results);
+        if ($previous_results eq $command_results) {
+            exit;
+        }
     }
 }
 
@@ -41,8 +56,7 @@ my $date=`date`;
 chomp($date);
 open my $filehandle, '>', "$filename" or die "unable to open file";
 print $filehandle <<END;
-THIS SCRIPT  : $0
-RUNNING      : @ARGV
+COMMAND      : $script_command
 DATE         : $date
 -------------------------------------------------------------------------
 $command_results
