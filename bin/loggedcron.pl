@@ -3,12 +3,9 @@ use strict;
 use warnings;
 use File::Basename qw(fileparse);
 
-# run command, store results, exit if results is empty string
+# run command, capture results.
 my $command_results=`@ARGV`;
 chomp($command_results);
-if ("$command_results" eq "") {
-    exit;
-}
 
 #derive previous results filename from command
 my ($short_command, $unused_command_path) = fileparse($ARGV[0]);
