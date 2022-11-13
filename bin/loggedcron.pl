@@ -58,7 +58,7 @@ open my $filehandle, '>', "$filename" or die "unable to open file";
 print $filehandle <<END;
 COMMAND      : $script_command
 DATE         : $date
--------------------------------------------------------------------------
+--------- what follows is output from: @ARGV ---------
 $command_results
 END
 close $filehandle or die "unable to close file";
