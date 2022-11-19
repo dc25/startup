@@ -25,12 +25,14 @@ or die("Error in command line arguments\n");
 my $command_results=`@ARGV`;
 chomp($command_results);
 
-#derive previous results filename from command
+#if no path_head specified then use command as path_head
 if ($path_head eq '') {
     my ($short_command, $unused_command_path) = fileparse($ARGV[0]);
     $path_head=$short_command;
 }
 my $toplevel = "$ENV{HOME}/cron_logs/$path_head";
+
+#save previous results at top level
 my $previous_results_file = "$toplevel/previous_results";
 #If previous results exist and are identical to current results then exit w/o writing anything.
 if ($skip_repeats) {
