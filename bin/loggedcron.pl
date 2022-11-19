@@ -3,6 +3,7 @@ use strict;
 use warnings;
 use File::Basename qw(fileparse);
 use Getopt::Long;
+use Switch;
 
 
 # thanks to: https://stackoverflow.com/a/8289657/509928
@@ -13,7 +14,9 @@ $script_command .= /\s/ ?   " \'" . $_ . "\'"
 }
 
 my $skip_repeats = '';
-GetOptions ("skip-repeats"  => \$skip_repeats)   # flag
+my $path_resolution = 'year';
+GetOptions ("skip-repeats"  => \$skip_repeats,
+            "path-resolution=s" => \$path_resolution)   
 or die("Error in command line arguments\n");
 
 # run command, capture results.
@@ -46,8 +49,17 @@ close $prev_results_filehandle or die "Unable to close previous results file.";
 #create and enter new directory
 my $filename=`date +%Y-%m-%d__%H-%M-%S`;
 chomp($filename);
-my ($year)= ("$1") if($filename=~ /(\d*)-/);
-my $path = "$toplevel/$year";
+my ($year,$month,$day,$hour)= ("$1","$2","$3","$4") if($filename=~ /(\d*)-(\d*)-(\d*)__(\d*)/);
+
+# assign to path based on path resolution from command line. defaults to year.
+my $path = "";
+switch($path_resolution) {
+    case "year"  {$path="${toplevel}/${year}"}
+    case "month" {$path="${toplevel}/${year}/${month}"}
+    case "day"   {$path="${toplevel}/${year}/${month}/${day}"}
+    case "hour"  {$path="${toplevel}/${year}/${month}/${day}/${hour}"}
+    else         { die "Invalid path_resolution option: $path_resolution" }
+}
 system("mkdir -p $path");
 chdir "$path";
 
