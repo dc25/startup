@@ -15,8 +15,10 @@ $script_command .= /\s/ ?   " \'" . $_ . "\'"
 
 my $skip_repeats = '';
 my $path_resolution = 'year';
+my $path_head = '';
 GetOptions ("skip-repeats"  => \$skip_repeats,
-            "path-resolution=s" => \$path_resolution)   
+            "path-resolution=s" => \$path_resolution,   
+            "path-head=s" => \$path_head)   
 or die("Error in command line arguments\n");
 
 # run command, capture results.
@@ -24,8 +26,11 @@ my $command_results=`@ARGV`;
 chomp($command_results);
 
 #derive previous results filename from command
-my ($short_command, $unused_command_path) = fileparse($ARGV[0]);
-my $toplevel = "$ENV{HOME}/cron_logs/$short_command";
+if ($path_head eq '') {
+    my ($short_command, $unused_command_path) = fileparse($ARGV[0]);
+    $path_head=$short_command;
+}
+my $toplevel = "$ENV{HOME}/cron_logs/$path_head";
 my $previous_results_file = "$toplevel/previous_results";
 #If previous results exist and are identical to current results then exit w/o writing anything.
 if ($skip_repeats) {
