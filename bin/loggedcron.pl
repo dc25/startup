@@ -21,16 +21,25 @@ GetOptions ("skip-repeats"  => \$skip_repeats,
             "path-head=s" => \$path_head)   
 or die("Error in command line arguments\n");
 
-# run command, capture results.
-my $command_results=`@ARGV`;
-chomp($command_results);
-
 #if no path_head specified then use command as path_head
 if ($path_head eq '') {
     my ($short_command, $unused_command_path) = fileparse($ARGV[0]);
     $path_head=$short_command;
 }
 my $toplevel = "$ENV{HOME}/cron_logs/$path_head";
+
+my $long_command = `which $ARGV[0]`;
+chomp($long_command);
+
+shift @ARGV;
+foreach (@ARGV) {
+    $long_command .= /\s/ ?   " \'" . $_ . "\'"
+                  :           " "   . $_;
+}
+
+# run command, capture results.
+my $command_results = `$long_command`;
+chomp($command_results);
 
 #save previous results at top level
 my $previous_results_file = "$toplevel/previous_results";
@@ -77,13 +86,15 @@ open my $filehandle, '>', "$filename" or die "unable to open file";
 print $filehandle <<END;
 COMMAND      : $script_command
 DATE         : $date
---------- what follows is output from: @ARGV ---------
+--------- what follows is output from: $long_command ---------
 $command_results
 END
 close $filehandle or die "unable to close file";
 
 #save to git
 #
+system("git add .");
+system("git commit -m \"running $long_command\" .");
 # Use different pub key for dedicated github repository.  
 # Thanks to : https://www.howtogeek.com/devops/how-to-use-a-different-private-ssh-key-for-git-shell-commands/
 #
@@ -93,7 +104,5 @@ my $cron_logs_key="$ENV{HOME}/.ssh/cron_logs";
 print "$cron_logs_key";
 if (-f $cron_logs_key) {
     $ENV{GIT_SSH_COMMAND}="ssh -i $cron_logs_key -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no";
-    system("git add .");
-    system("git commit -m \"running @ARGV\" .");
     system("git push");
 }
