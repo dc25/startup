@@ -1,2 +1,5 @@
 #! /bin/bash
-curl -4s icanhazip.com
+IP=`curl -4s icanhazip.com`
+if [[ "$IP" != "" ]]; then
+    echo IP=$IP
+fi
