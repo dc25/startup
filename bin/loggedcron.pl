@@ -36,7 +36,7 @@ chdir "$toplevel";
 #save to git
 #
 system("git add $toplevel");
-system("git commit -m \"Checking in at $toplevel before running $long_command\" $toplevel");
+system("git commit -m \"Checking in $toplevel before running $long_command\" $toplevel");
 # Use different pub key to push to dedicated github repository.  
 # Thanks to : https://www.howtogeek.com/devops/how-to-use-a-different-private-ssh-key-for-git-shell-commands/
 my $cron_logs_key="$ENV{HOME}/.ssh/cron_logs";
