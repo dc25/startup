@@ -31,6 +31,26 @@ my $toplevel = "$ENV{HOME}/cron_logs/$path_head";
 my $long_command = `which $ARGV[0]`;
 chomp($long_command);
 
+system("mkdir -p $toplevel");
+chdir "$toplevel";
+#save to git
+#
+system("git add $toplevel");
+system("git commit -m \"Checking in at $toplevel before running $long_command\" $toplevel");
+# Use different pub key to push to dedicated github repository.  
+# Thanks to : https://www.howtogeek.com/devops/how-to-use-a-different-private-ssh-key-for-git-shell-commands/
+my $cron_logs_key="$ENV{HOME}/.ssh/cron_logs";
+if (-f $cron_logs_key) {
+    $ENV{GIT_SSH_COMMAND}="ssh -i $cron_logs_key -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no";
+}
+
+#
+# Only attempt to do git push if ssh key exists.
+#
+if (-f $cron_logs_key) {
+    system("git push");
+}
+
 shift @ARGV;
 foreach (@ARGV) {
     $long_command .= /\s/ ?   " \'" . $_ . "\'"
@@ -55,7 +75,6 @@ if ($skip_repeats) {
 }
 
 # Save current command results as new previous results.
-system("mkdir -p $toplevel");
 open my $prev_results_filehandle, '>', "$previous_results_file" or die "Unable to open previous results file for writing.";
 print $prev_results_filehandle <<END;
 $command_results
@@ -93,16 +112,11 @@ close $filehandle or die "unable to close file";
 
 #save to git
 #
-system("git add .");
-system("git commit -m \"running $long_command\" .");
-# Use different pub key for dedicated github repository.  
-# Thanks to : https://www.howtogeek.com/devops/how-to-use-a-different-private-ssh-key-for-git-shell-commands/
+system("git add $toplevel");
+system("git commit -m \"running $long_command\" $toplevel");
 #
-# Only attempt to do git commands if ssh key exists.
+# Only attempt to do git push if ssh key exists.
 #
-my $cron_logs_key="$ENV{HOME}/.ssh/cron_logs";
-print "$cron_logs_key";
 if (-f $cron_logs_key) {
-    $ENV{GIT_SSH_COMMAND}="ssh -i $cron_logs_key -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no";
     system("git push");
 }
