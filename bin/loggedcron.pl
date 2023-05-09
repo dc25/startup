@@ -33,23 +33,6 @@ chomp($long_command);
 
 system("mkdir -p $toplevel");
 chdir "$toplevel";
-#save to git
-#
-system("git add $toplevel");
-system("git commit -m \"Checking in $toplevel before running $long_command\" $toplevel");
-# Use different pub key to push to dedicated github repository.  
-# Thanks to : https://www.howtogeek.com/devops/how-to-use-a-different-private-ssh-key-for-git-shell-commands/
-my $cron_logs_key="$ENV{HOME}/.ssh/cron_logs";
-if (-f $cron_logs_key) {
-    $ENV{GIT_SSH_COMMAND}="ssh -i $cron_logs_key -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no";
-}
-
-#
-# Only attempt to do git push if ssh key exists.
-#
-if (-f $cron_logs_key) {
-    system("git push");
-}
 
 shift @ARGV;
 foreach (@ARGV) {
@@ -109,14 +92,3 @@ DATE         : $date
 $command_results
 END
 close $filehandle or die "unable to close file";
-
-#save to git
-#
-system("git add $toplevel");
-system("git commit -m \"running $long_command\" $toplevel");
-#
-# Only attempt to do git push if ssh key exists.
-#
-if (-f $cron_logs_key) {
-    system("git push");
-}
