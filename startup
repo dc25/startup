@@ -27,3 +27,10 @@ CUSTOM=$REPOS/git/custom_startup/startup
 if [ -f $CUSTOM ]; then
   . $CUSTOM
 fi
+
+
+## thanks to: https://stackoverflow.com/a/28910144/509928
+if [ "$TERM" = "xterm-256color" ]; then
+xtermcontrol --color4=rgb:4212/F848/FFFF
+xtermcontrol --bg=rgb:0/0/0
+fi
