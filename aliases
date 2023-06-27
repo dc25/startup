@@ -7,3 +7,4 @@ alias .......='cd .......'
 
 alias cdgit='cd $REPOS/git'
 alias cdgnc='cd $REPOS/gitnc'
+alias cdtmp='cd $REPOS/tmp'
