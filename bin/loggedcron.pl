@@ -16,7 +16,9 @@ $script_command .= /\s/ ?   " \'" . $_ . "\'"
 my $skip_repeats = '';
 my $path_resolution = 'year';
 my $path_head = '';
+my $cron_logs = 'cron_logs';
 GetOptions ("skip-repeats"  => \$skip_repeats,
+            "cron-logs=s" => \$cron_logs,   
             "path-resolution=s" => \$path_resolution,   
             "path-head=s" => \$path_head)   
 or die("Error in command line arguments\n");
@@ -26,7 +28,7 @@ if ($path_head eq '') {
     my ($short_command, $unused_command_path) = fileparse($ARGV[0]);
     $path_head=$short_command;
 }
-my $toplevel = "$ENV{HOME}/cron_logs/$path_head";
+my $toplevel = "$ENV{HOME}/$cron_logs/$path_head";
 
 my $long_command = `which $ARGV[0]`;
 chomp($long_command);
