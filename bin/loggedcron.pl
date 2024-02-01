@@ -16,19 +16,42 @@ $script_command .= /\s/ ?   " \'" . $_ . "\'"
 my $skip_repeats = '';
 my $path_resolution = 'year';
 my $path_head = '';
-my $cron_logs = 'cron_logs';
 GetOptions ("skip-repeats"  => \$skip_repeats,
-            "cron-logs=s" => \$cron_logs,   
+            "root-dir=s" => \( my $root_dir = undef ),   
+            "file-suffix=s" => \( my $file_suffix = "" ),   
             "path-resolution=s" => \$path_resolution,   
             "path-head=s" => \$path_head)   
 or die("Error in command line arguments\n");
+
+# thanks to : https://stackoverflow.com/questions/37453445/how-to-pass-both-mandatory-and-optional-command-line-arguments-to-perl-script
+# for mandatory argument techniques.   
+
+if (not defined $root_dir) {
+    say STDERR "Argument 'root-dir' is mandatory";
+    usage();
+}
+
+# The program goes now. Value for $opt may or may have not been supplied
+
+sub usage {
+    say STDERR "Usage: $0 --root-dir=<root-dir> ...";   # full usage message
+    exit;
+}
 
 #if no path_head specified then use command as path_head
 if ($path_head eq '') {
     my ($short_command, $unused_command_path) = fileparse($ARGV[0]);
     $path_head=$short_command;
 }
-my $toplevel = "$ENV{HOME}/$cron_logs/$path_head";
+my $toplevel = "$ENV{HOME}/$root_dir/$path_head";
+
+#create and enter new directory
+my $filedate=`date +%Y-%m-%d__%H-%M-%S`;
+chomp($filedate);
+my ($year,$month,$day,$hour)= ("$1","$2","$3","$4") if($filedate=~ /(\d*)-(\d*)-(\d*)__(\d*)/);
+
+my $filename="${filedate}_${path_head}${file_suffix}";
+
 
 my $long_command = `which $ARGV[0]`;
 chomp($long_command);
@@ -42,8 +65,10 @@ foreach (@ARGV) {
                   :           " "   . $_;
 }
 
+my $tmp_file = "/tmp/$filename";
 # run command, capture results.
-my $command_results = `$long_command`;
+system("$long_command 1>>$tmp_file 2>&1");
+my $command_results = `cat $tmp_file`;
 chomp($command_results);
 
 #save previous results at top level
@@ -65,11 +90,6 @@ print $prev_results_filehandle <<END;
 $command_results
 END
 close $prev_results_filehandle or die "Unable to close previous results file.";
-
-#create and enter new directory
-my $filename=`date +%Y-%m-%d__%H-%M-%S`;
-chomp($filename);
-my ($year,$month,$day,$hour)= ("$1","$2","$3","$4") if($filename=~ /(\d*)-(\d*)-(\d*)__(\d*)/);
 
 # assign to path based on path resolution from command line. defaults to year.
 my $path = "";
